@@ -84,11 +84,12 @@ def sip_findone(ext):
 
     # Get config file content
     config = read_config(config_filename)
-    # Find matching pattern
-    results = sip_regex.findall(config)
+    # Find matching pattern, return match object
+    results = sip_regex.search(config)
 
-    # Return the result
-    return results
+    # Return the result if matched
+    if results:
+        return results.group()
 
 
 # Write/update sips data to config file
@@ -214,12 +215,21 @@ if len(sys.argv) == 3:
 
     # Delete extension
     elif sys.argv[1] == 'del':
-        print('delete')
-    # View extension
-    elif sys.argv[1] == 'view':
+        # Find extension
         find_ext = sip_findone(input_extension)
         if find_ext:
-            print(find_ext[0][0])
+            # Get sips data
+            sips_data = sip_findall()
+            print('delete')
+        else:
+            print('That extension number does not exist. Exiting.')
+            sys.exit()
+    # View extension
+    elif sys.argv[1] == 'view':
+        # Find extension
+        find_ext = sip_findone(input_extension)
+        if find_ext:
+            print(find_ext)
         else:
             print('That extension number does not exist. Exiting.')
             sys.exit()
