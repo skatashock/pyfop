@@ -69,9 +69,29 @@ def sip_findall():
 
     return sips_data
 
+
+# Find sip by extension number
+def sip_findone(ext):
+    # Regex pattern
+    sip_regex = re.compile(r'''(
+        ((;?)\[SIP/%s])\n # 1:line, 3:ext. number
+        (Position=(\d{1,3}))\n      # 4:line, 5:position
+        (Label="(.*)")\n            # 6:line, 7:label
+        (Extension=(\d{2,4}))\n     # 8:line, 9:ext. number
+        (Context=(.*))\n            # 10:line, 11:context
+        (Icon=(\d+))\n              # 12:line, 13:icon
+        )''' % (ext), re.IGNORECASE | re.VERBOSE)
+
+    # Get config file content
+    config = read_config(config_filename)
+    # Find matching pattern
+    results = sip_regex.findall(config)
+
+    # Return the result
+    return results
+
+
 # Write/update sips data to config file
-
-
 def write_config(exts_new, sips_data):
     with open('test.cfg', 'w') as testfile:
         for ext in exts_new:
@@ -197,15 +217,24 @@ if len(sys.argv) == 3:
         print('delete')
     # View extension
     elif sys.argv[1] == 'view':
-        print('view')
+        find_ext = sip_findone(input_extension)
+        if find_ext:
+            print(find_ext[0][0])
+        else:
+            print('That extension number does not exist. Exiting.')
+            sys.exit()
     # Not a valid action
     else:
         print('Oops! That was not a valid actions. Exiting.')
 
 # List all sips
 elif len(sys.argv) == 2 and sys.argv[1] == 'list':
-    # TODO: list all
-    print('list')
+    # Get sips data
+    sips_data = sip_findall()
+
+    # Iterate over all sips data
+    for sip in sips_data:
+        print('{0}/{1}'.format(sips_data[sip][1], sips_data[sip][2]))
 # No arguments/parameters given, exiting
 else:
     print('Please provide action or parameters. Exiting now.')
