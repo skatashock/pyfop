@@ -234,6 +234,7 @@ elif len(sys.argv) == 2 and sys.argv[1] == 'list':
 
     # Iterate over all sips data
     for sip in sips_data:
+        # Print the results to screen
         print('{0}/{1}'.format(sips_data[sip][1], sips_data[sip][2]))
 # No arguments/parameters given, exiting
 else:
