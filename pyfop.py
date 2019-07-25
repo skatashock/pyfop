@@ -16,6 +16,9 @@ config_filename = 'op_buttons.cfg'
 # Extensions list, default to empty list
 exts = []
 
+# Positions list, default to empty list
+positions = []
+
 # Extension numbers range between 2000 and 3999
 ext_start = 2000
 ext_end = 3999
@@ -62,6 +65,9 @@ def sip_findall():
             # Add extension to extension list
             exts.append(extension)
 
+            # Add position to position list
+            positions.append(position)
+
             # Create list of data needed per extension
             extension_data = [extension, position, label, context]
             # Add above list to sips dictionary
@@ -84,12 +90,11 @@ def sip_findone(ext):
 
     # Get config file content
     config = read_config(config_filename)
-    # Find matching pattern, return match object
-    results = sip_regex.search(config)
+    # Find matching pattern
+    results = sip_regex.findall(config)
 
     # Return the result if matched
-    if results:
-        return results.group()
+    return results
 
 
 # Write/update sips data to config file
@@ -98,6 +103,18 @@ def write_config(exts_new, sips_data):
         for ext in exts_new:
             testfile.write('[SIP/{0}]\n'.format(sips_data[ext][0]))
             testfile.write('Position={0}\n'.format(sips_data[ext][1]))
+            testfile.write('Label=\"{0}\"\n'.format(sips_data[ext][2]))
+            testfile.write('Extension={0}\n'.format(sips_data[ext][0]))
+            testfile.write('Context={0}\n'.format(sips_data[ext][3]))
+            testfile.write('icon=1\n\n')
+
+
+# Delete sips data from config file
+def del_config(exts_new, sips_data):
+    with open('test.cfg', 'w') as testfile:
+        for num, ext in enumerate(exts_new, start=0):
+            testfile.write('[SIP/{0}]\n'.format(sips_data[ext][0]))
+            testfile.write('Position={0}\n'.format(positions[num]))
             testfile.write('Label=\"{0}\"\n'.format(sips_data[ext][2]))
             testfile.write('Extension={0}\n'.format(sips_data[ext][0]))
             testfile.write('Context={0}\n'.format(sips_data[ext][3]))
@@ -220,7 +237,18 @@ if len(sys.argv) == 3:
         if find_ext:
             # Get sips data
             sips_data = sip_findall()
-            print('delete')
+            input_position = find_ext[0][4]
+
+            exts_new = exts.copy()
+            exts_new.remove(str(input_extension))
+
+            input_extension_index = exts.index(str(input_extension))
+            positions.pop(len(exts_new))
+
+            # Write data to config file
+            del_config(exts_new, sips_data)
+            print('Extension number {0} succesfully deleted.'
+                  .format(str(input_extension)))
         else:
             print('That extension number does not exist. Exiting.')
             sys.exit()
@@ -229,7 +257,7 @@ if len(sys.argv) == 3:
         # Find extension
         find_ext = sip_findone(input_extension)
         if find_ext:
-            print(find_ext)
+            print(find_ext[0][0])
         else:
             print('That extension number does not exist. Exiting.')
             sys.exit()
