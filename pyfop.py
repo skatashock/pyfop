@@ -232,17 +232,21 @@ if len(sys.argv) == 3:
 
     # Delete extension
     elif sys.argv[1] == 'del':
-        # Find extension
-        find_ext = sip_findone(input_extension)
-        if find_ext:
-            # Get sips data
-            sips_data = sip_findall()
-            input_position = find_ext[0][4]
+        # Get sips data
+        sips_data = sip_findall()
 
+        if str(input_extension) in sips_data:
+            # TODO: display confirmation first
+
+            # Get sip position
+            input_position = sips_data[str(input_extension)][1]
+
+            # copy new exts list
             exts_new = exts.copy()
+            # remove sip from new exts list
             exts_new.remove(str(input_extension))
 
-            input_extension_index = exts.index(str(input_extension))
+            # remove last index in positions list
             positions.pop(len(exts_new))
 
             # Write data to config file
