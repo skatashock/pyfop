@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 import re
 import bisect
@@ -121,7 +123,7 @@ def write_config(config, exts_new, sips_data):
             print('Header template missing. Action aborted.')
             sys.exit()
 
-    os.rename(config_filename_temp, 'test.cfg')
+    os.rename(config_filename_temp, config_filename)
 
 
 # Delete sips data from config file
@@ -142,7 +144,7 @@ def del_config(exts_new, sips_data):
             print('Header template missing. Action aborted.')
             sys.exit()
 
-    os.rename(config_filename_temp, 'test.cfg')
+    os.rename(config_filename_temp, config_filename)
 
 
 # Config file
