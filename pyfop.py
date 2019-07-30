@@ -23,9 +23,9 @@ exts = []
 # Positions list, default to empty list
 positions = []
 
-# Extension numbers range between 2000 and 3999
+# Extension numbers range between ext_start and ext_end
 ext_start = 2000
-ext_end = 3999
+ext_end = 3299
 
 
 # Copy others configs
@@ -159,9 +159,11 @@ if len(sys.argv) == 3:
         print('Oops! That was not a valid extension number.')
         sys.exit()
 
-    # Limit extension number between 2000 and 3999
+    # Limit extension number between ext_start and ext_end
     if input_extension < ext_start or input_extension > ext_end:
-        print('Extension number must be between 2000 and 3999.')
+        print('Extension number must be between {0} and {1}.'.format(
+            ext_start, ext_end
+        ))
         sys.exit()
 
     # Add new extension
