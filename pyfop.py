@@ -51,12 +51,12 @@ def sip_findall(config):
 
     # Regex pattern
     sip_regex = re.compile(r'''(
-        ((;?)\[SIP/(2\d{3}|3[0-2]\d{2})\])\n # 1:line, 3:ext. number
-        (Position=(\d{1,3}))\n      # 4:line, 5:position
-        (Label="(.*)")\n            # 6:line, 7:label
-        (Extension=(\d{2,4}))\n     # 8:line, 9:ext. number
-        (Context=(.*))\n            # 10:line, 11:context
-        (Icon=(\d+))                # 12:line, 13:icon
+        ((;?)\[SIP/(2\d{3}|3[0-2]\d{2})\])\n    # 1:line, 3:ext. number
+        (Position=(\d{1,3}))\n                  # 4:line, 5:position
+        (Label="(.*)")\n                        # 6:line, 7:label
+        (Extension=(\d{2,4}))\n                 # 8:line, 9:ext. number
+        (Context=(.*))\n                        # 10:line, 11:context
+        (Icon=(\d+))                            # 12:line, 13:icon
         )''', re.IGNORECASE | re.VERBOSE)
 
     # Find all matching pattern
@@ -90,7 +90,7 @@ def sip_findall(config):
 def sip_findone(config, ext):
     # Regex pattern
     sip_regex = re.compile(r'''(
-        ((;?)\[SIP/%s])\n # 1:line, 3:ext. number
+        ((;?)\[SIP/%s])\n           # 1:line, 3:ext. number
         (Position=(\d{1,3}))\n      # 4:line, 5:position
         (Label="(.*)")\n            # 6:line, 7:label
         (Extension=(\d{2,4}))\n     # 8:line, 9:ext. number
