@@ -1,6 +1,7 @@
 import sys
 import re
 import bisect
+import os
 
 # Sample data:
 # [Sip/2003]
@@ -12,6 +13,7 @@ import bisect
 
 # Config filename
 config_filename = 'op_buttons.cfg'
+config_filename_temp = 'op_buttons.cfg.tmp'
 
 # Extensions list, default to empty list
 exts = []
@@ -24,6 +26,14 @@ ext_start = 2000
 ext_end = 3999
 
 
+# Copy others configs
+def find_header(config):
+    # Regex pattern
+    header_regex = re.compile(r';START([\s\S]+);END')
+    result = header_regex.search(config)
+    return result
+
+
 # Open, copy content and close config file
 def read_config(filepath):
     config_file = open(filepath)
@@ -33,7 +43,7 @@ def read_config(filepath):
 
 
 # Find all sips function
-def sip_findall():
+def sip_findall(config):
     # Sips data dictionary
     sips_data = {}
 
@@ -44,11 +54,9 @@ def sip_findall():
         (Label="(.*)")\n            # 6:line, 7:label
         (Extension=(\d{2,4}))\n     # 8:line, 9:ext. number
         (Context=(.*))\n            # 10:line, 11:context
-        (Icon=(\d+))\n              # 12:line, 13:icon
+        (Icon=(\d+))                # 12:line, 13:icon
         )''', re.IGNORECASE | re.VERBOSE)
 
-    # Get config file content
-    config = read_config(config_filename)
     # Find all matching pattern
     results = sip_regex.findall(config)
 
@@ -77,7 +85,7 @@ def sip_findall():
 
 
 # Find sip by extension number
-def sip_findone(ext):
+def sip_findone(config, ext):
     # Regex pattern
     sip_regex = re.compile(r'''(
         ((;?)\[SIP/%s])\n # 1:line, 3:ext. number
@@ -88,8 +96,6 @@ def sip_findone(ext):
         (Icon=(\d+))\n              # 12:line, 13:icon
         )''' % (ext), re.IGNORECASE | re.VERBOSE)
 
-    # Get config file content
-    config = read_config(config_filename)
     # Find matching pattern
     results = sip_regex.findall(config)
 
@@ -98,28 +104,49 @@ def sip_findone(ext):
 
 
 # Write/update sips data to config file
-def write_config(exts_new, sips_data):
-    with open('test.cfg', 'w') as testfile:
-        for ext in exts_new:
-            testfile.write('[SIP/{0}]\n'.format(sips_data[ext][0]))
-            testfile.write('Position={0}\n'.format(sips_data[ext][1]))
-            testfile.write('Label=\"{0}\"\n'.format(sips_data[ext][2]))
-            testfile.write('Extension={0}\n'.format(sips_data[ext][0]))
-            testfile.write('Context={0}\n'.format(sips_data[ext][3]))
-            testfile.write('icon=1\n\n')
+def write_config(config, exts_new, sips_data):
+    with open(config_filename_temp, 'w') as testfile:
+        header = find_header(config)
+        testfile.write(header.group())
+        testfile.write('\n\n')
+        if header:
+            for ext in exts_new:
+                testfile.write('[SIP/{0}]\n'.format(sips_data[ext][0]))
+                testfile.write('Position={0}\n'.format(sips_data[ext][1]))
+                testfile.write('Label=\"{0}\"\n'.format(sips_data[ext][2]))
+                testfile.write('Extension={0}\n'.format(sips_data[ext][0]))
+                testfile.write('Context={0}\n'.format(sips_data[ext][3]))
+                testfile.write('icon=1\n\n')
+        else:
+            print('Header template missing. Action aborted.')
+            sys.exit()
+
+    os.rename(config_filename_temp, 'test.cfg')
 
 
 # Delete sips data from config file
 def del_config(exts_new, sips_data):
-    with open('test.cfg', 'w') as testfile:
-        for num, ext in enumerate(exts_new, start=0):
-            testfile.write('[SIP/{0}]\n'.format(sips_data[ext][0]))
-            testfile.write('Position={0}\n'.format(positions[num]))
-            testfile.write('Label=\"{0}\"\n'.format(sips_data[ext][2]))
-            testfile.write('Extension={0}\n'.format(sips_data[ext][0]))
-            testfile.write('Context={0}\n'.format(sips_data[ext][3]))
-            testfile.write('icon=1\n\n')
+    with open(config_filename_temp, 'w') as testfile:
+        header = find_header(config)
+        testfile.write(header.group())
+        testfile.write('\n\n')
+        if header:
+            for num, ext in enumerate(exts_new, start=0):
+                testfile.write('[SIP/{0}]\n'.format(sips_data[ext][0]))
+                testfile.write('Position={0}\n'.format(positions[num]))
+                testfile.write('Label=\"{0}\"\n'.format(sips_data[ext][2]))
+                testfile.write('Extension={0}\n'.format(sips_data[ext][0]))
+                testfile.write('Context={0}\n'.format(sips_data[ext][3]))
+                testfile.write('icon=1\n\n')
+        else:
+            print('Header template missing. Action aborted.')
+            sys.exit()
 
+    os.rename(config_filename_temp, 'test.cfg')
+
+
+# Config file
+config = read_config(config_filename)
 
 # Check action and extension number argument/parameter
 if len(sys.argv) == 3:
@@ -138,7 +165,7 @@ if len(sys.argv) == 3:
     # Add new extension
     if sys.argv[1] == 'add':
         # Get sips data
-        sips_data = sip_findall()
+        sips_data = sip_findall(config)
 
         # Check if the input number already exists
         if str(input_extension) in exts:
@@ -226,17 +253,39 @@ if len(sys.argv) == 3:
             sips_data[str(input_extension)] = input_data
 
         # Write data to config file
-        write_config(exts_new, sips_data)
+        write_config(config, exts_new, sips_data)
         print('Extension number {0} succesfully added.'
               .format(str(input_extension)))
 
     # Delete extension
     elif sys.argv[1] == 'del':
         # Get sips data
-        sips_data = sip_findall()
+        sips_data = sip_findall(config)
 
         if str(input_extension) in sips_data:
-            # TODO: display confirmation first
+            # Display info and confirmation first before delete
+            ext = sips_data[str(input_extension)][0]
+            pos = sips_data[str(input_extension)][1]
+            label = sips_data[str(input_extension)][2]
+            context = sips_data[str(input_extension)][3]
+
+            print('Ext. information: ')
+            print('[SIP/{0}]'.format(ext))
+            print('Position={0}'.format(pos))
+            print('Label="{0}"'.format(label))
+            print('Extension={0}'.format(ext))
+            print('Context={0}'.format(context))
+            print('icon=1\n')
+
+            while True:
+                confirm = input('Delete this extension?\n(y/n) ').strip()
+                if confirm.lower() == 'y' or confirm.lower() == 'yes':
+                    break
+                elif confirm.lower() == 'n' or confirm.lower() == 'no':
+                    print('Action cancelled. Exiting.')
+                    sys.exit()
+                else:
+                    print('Please input only "y" or "n".')
 
             # Get sip position
             input_position = sips_data[str(input_extension)][1]
@@ -259,7 +308,7 @@ if len(sys.argv) == 3:
     # View extension
     elif sys.argv[1] == 'view':
         # Find extension
-        find_ext = sip_findone(input_extension)
+        find_ext = sip_findone(config, input_extension)
         if find_ext:
             print(find_ext[0][0])
         else:
@@ -272,8 +321,9 @@ if len(sys.argv) == 3:
 # List all sips
 elif len(sys.argv) == 2 and sys.argv[1] == 'list':
     # Get sips data
-    sips_data = sip_findall()
+    sips_data = sip_findall(config)
 
+    print('POS/EXT LABEL')
     # Iterate over all sips data
     for sip in sips_data:
         # Print the results to screen
