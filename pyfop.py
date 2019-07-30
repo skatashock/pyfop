@@ -120,7 +120,7 @@ def write_config(config, exts_new, sips_data):
                 testfile.write('Context={0}\n'.format(sips_data[ext][3]))
                 testfile.write('icon=1\n\n')
         else:
-            print('Header template missing. Action aborted.')
+            print('Header template missing. Check your config file.')
             sys.exit()
 
     os.rename(config_filename_temp, config_filename)
@@ -141,7 +141,7 @@ def del_config(exts_new, sips_data):
                 testfile.write('Context={0}\n'.format(sips_data[ext][3]))
                 testfile.write('icon=1\n\n')
         else:
-            print('Header template missing. Action aborted.')
+            print('Header template missing. Check your config file.')
             sys.exit()
 
     os.rename(config_filename_temp, config_filename)
@@ -156,12 +156,12 @@ if len(sys.argv) == 3:
     try:
         input_extension = int(sys.argv[2])
     except ValueError:
-        print('Oops! That was not a valid extension number. Exiting.')
+        print('Oops! That was not a valid extension number.')
         sys.exit()
 
     # Limit extension number between 2000 and 3999
     if input_extension < ext_start or input_extension > ext_end:
-        print('Extension number must be between 2000 and 3999. Exiting.')
+        print('Extension number must be between 2000 and 3999.')
         sys.exit()
 
     # Add new extension
@@ -171,7 +171,7 @@ if len(sys.argv) == 3:
 
         # Check if the input number already exists
         if str(input_extension) in exts:
-            print('That extension number exists. Exiting.')
+            print('That extension number exists.')
             sys.exit()
 
         # Get input for Label & some validation
@@ -284,7 +284,7 @@ if len(sys.argv) == 3:
                 if confirm.lower() == 'y' or confirm.lower() == 'yes':
                     break
                 elif confirm.lower() == 'n' or confirm.lower() == 'no':
-                    print('Action cancelled. Exiting.')
+                    print('Action cancelled.')
                     sys.exit()
                 else:
                     print('Please input only "y" or "n".')
@@ -305,7 +305,7 @@ if len(sys.argv) == 3:
             print('Extension number {0} succesfully deleted.'
                   .format(str(input_extension)))
         else:
-            print('That extension number does not exist. Exiting.')
+            print('That extension number does not exist.')
             sys.exit()
     # View extension
     elif sys.argv[1] == 'view':
@@ -314,11 +314,11 @@ if len(sys.argv) == 3:
         if find_ext:
             print(find_ext[0][0])
         else:
-            print('That extension number does not exist. Exiting.')
+            print('That extension number does not exist.')
             sys.exit()
     # Not a valid action
     else:
-        print('Oops! That was not a valid actions. Exiting.')
+        print('Oops! That was not a valid actions.')
 
 # List all sips
 elif len(sys.argv) == 2 and sys.argv[1] == 'list':
@@ -332,5 +332,8 @@ elif len(sys.argv) == 2 and sys.argv[1] == 'list':
         print('{0}/{1}'.format(sips_data[sip][1], sips_data[sip][2]))
 # No arguments/parameters given, exiting
 else:
-    print('Please provide action or parameters. Exiting now.')
+    if len(sys.argv) == 1:
+        print('Please provide action and/or parameters.')
+    else:
+        print('Invalid action {0}'.format(sys.argv[1]))
     sys.exit()
