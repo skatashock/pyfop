@@ -14,8 +14,8 @@ import os
 # icon=1
 
 # Config filename
-config_filename = 'op_buttons.cfg'
-config_filename_temp = 'op_buttons.cfg.tmp'
+config_filename = '/var/www/op_panel-0.29/op_buttons.cfg'
+config_filename_temp = '/var/www/op_panel-0.29/op_buttons.cfg.tmp'
 
 # Extensions list, default to empty list
 exts = []
@@ -38,10 +38,14 @@ def find_header(config):
 
 # Open, copy content and close config file
 def read_config(filepath):
-    config_file = open(filepath)
-    config = config_file.read()
-    config_file.close()
-    return config
+    try:
+        config_file = open(filepath)
+        config = config_file.read()
+        config_file.close()
+        return config
+    except FileNotFoundError:
+        print('Error, config file not found.')
+        sys.exit()
 
 
 # Find all sips function
@@ -168,6 +172,10 @@ if len(sys.argv) == 3:
 
     # Add new extension
     if sys.argv[1] == 'add':
+        # Check for root access
+        if os.geteuid() != 0:
+            os.execvp('sudo', ['sudo', 'python3'] + sys.argv)
+
         # Get sips data
         sips_data = sip_findall(config)
 
@@ -263,6 +271,10 @@ if len(sys.argv) == 3:
 
     # Delete extension
     elif sys.argv[1] == 'del':
+        # Check for root access
+        if os.geteuid() != 0:
+            os.execvp('sudo', ['sudo', 'python3'] + sys.argv)
+
         # Get sips data
         sips_data = sip_findall(config)
 
@@ -337,5 +349,5 @@ else:
     if len(sys.argv) == 1:
         print('Please provide action and/or parameters.')
     else:
-        print('Invalid action {0}'.format(sys.argv[1]))
+        print('Invalid action \'{0}\''.format(sys.argv[1]))
     sys.exit()
